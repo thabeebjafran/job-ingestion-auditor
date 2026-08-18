@@ -1,0 +1,17 @@
+# GCP Credentials & Secrets
+credentials.json
+*.json
+*.env
+.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.venv/
+env/
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
