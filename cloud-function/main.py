@@ -189,6 +189,19 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
             }
         })
 
+    # 4. Fallback search button if no direct contact or apply link was detected
+    if not action_buttons:
+        import urllib.parse
+        search_query = urllib.parse.quote(f"{data.get('company_name', '')} {data.get('role_title', '')} Dubai careers apply")
+        action_buttons.append({
+            'text': '🌐 View / Apply on Web',
+            'onClick': {
+                'openLink': {
+                    'url': f'https://www.google.com/search?q={search_query}'
+                }
+            }
+        })
+
     widgets = [
         {
             'textParagraph': {
@@ -386,13 +399,26 @@ def process_apify_jobs_background(items: list, target_space: str) -> dict:
             'Dubai, UAE'
         ).strip()
         
-        apply_url = (
-            item.get('jobUrl') or 
-            item.get('applyUrl') or 
-            item.get('url') or 
-            item.get('link') or 
-            ''
-        ).strip()
+        # Extract apply URL from various scraper formats (Google Jobs, Indeed, LinkedIn, Bayt)
+        apply_url = ''
+        if item.get('apply_options') and isinstance(item['apply_options'], list) and len(item['apply_options']) > 0:
+            apply_url = item['apply_options'][0].get('link') or item['apply_options'][0].get('url') or ''
+        elif item.get('applyOptions') and isinstance(item['applyOptions'], list) and len(item['applyOptions']) > 0:
+            apply_url = item['applyOptions'][0].get('link') or item['applyOptions'][0].get('url') or ''
+            
+        if not apply_url:
+            apply_url = (
+                item.get('jobUrl') or 
+                item.get('applyUrl') or 
+                item.get('applyLink') or
+                item.get('url') or 
+                item.get('link') or 
+                item.get('job_link') or
+                item.get('share_link') or
+                item.get('shareLink') or
+                item.get('google_jobs_url') or
+                ''
+            ).strip()
         
         description = (
             item.get('description') or 
