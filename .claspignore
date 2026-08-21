@@ -1,0 +1,10 @@
+# Ignore everything outside rootDir by default
+**/*
+
+# Include all files in apps-script directory
+!Code.js
+!Auth.js
+!SheetSync.js
+!ApifyWebhook.js
+!appsscript.json
+!*.js

@@ -1,0 +1,14 @@
+{
+  "name": "job-ingestion-auditor-apps-script",
+  "version": "1.0.0",
+  "description": "Google Apps Script automation with Clasp",
+  "scripts": {
+    "login": "clasp login",
+    "status": "clasp status",
+    "push": "clasp push",
+    "deploy:apps-script": "clasp push && clasp deploy --description \"Automated deployment from Clasp\""
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}

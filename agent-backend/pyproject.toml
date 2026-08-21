@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-auditor-agent"
+version = "0.1.0"
+description = "Multi-agent job auditing engine using Vertex AI and Google Search Grounding"
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=0.1.1",
+    "google-cloud-aiplatform>=1.60.0",
+    "pydantic>=2.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["llm_auditor*"]

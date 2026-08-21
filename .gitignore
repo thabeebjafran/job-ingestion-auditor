@@ -1,12 +1,14 @@
 # GCP Credentials & Secrets
 credentials.json
-*.json
+*credentials*.json
+*secret*.json
 *.env
 .env
 
-# Python artifacts
+# Python & Build artifacts
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 env/
 dist/
