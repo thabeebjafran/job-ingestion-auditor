@@ -1,6 +1,8 @@
 import os
 import json
 import requests
+import urllib.parse
+import html
 import google.auth
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -120,8 +122,6 @@ INSTRUCTIONS:
         )
     )
     return json.loads(res.text)
-
-import html
 
 def build_card_obj(data: dict, sheet_status: str, space_name: str = '') -> dict:
     company = html.escape(str(data.get('company_name') or 'Target Company'))
