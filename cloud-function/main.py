@@ -597,6 +597,37 @@ async def chat_webhook(request: Request):
         target_card_id = str(params.get('card_id') or event.get('cardId') or f'audit_{abs(hash(role + company))}')
         
         print(f"Clearing card {target_card_id} for {role} @ {company}")
+
+        # Direct Google Chat REST API Patch
+        msg_name = event.get('message', {}).get('name')
+        if msg_name:
+            try:
+                token = get_google_access_token()
+                patch_url = f"https://chat.googleapis.com/v1/{msg_name}?updateMask=cardsV2"
+                headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+                cleared_payload = {
+                    'cardsV2': [{
+                        'cardId': target_card_id,
+                        'card': {
+                            'header': {
+                                'title': f'{role} @ {company}',
+                                'subtitle': '✅ Marked as Applied & Cleared'
+                            },
+                            'sections': [{
+                                'widgets': [{
+                                    'textParagraph': {
+                                        'text': '<i>Application reviewed & cleared.</i>'
+                                    }
+                                }]
+                            }]
+                        }
+                    }]
+                }
+                res = requests.patch(patch_url, json=cleared_payload, headers=headers, timeout=10)
+                print(f"Direct REST API patch status for {msg_name}: {res.status_code} - {res.text[:200]}")
+            except Exception as patch_err:
+                print("Error directly patching message:", patch_err)
+
         return {
             'actionResponse': {
                 'type': 'UPDATE_MESSAGE'
