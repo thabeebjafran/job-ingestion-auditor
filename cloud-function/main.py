@@ -589,26 +589,12 @@ async def chat_webhook(request: Request):
         company = str(params.get('company') or 'Target Company')
         role = str(params.get('role') or 'Position')
         
+        print(f"Clearing card for {role} @ {company}")
         return {
             'actionResponse': {
                 'type': 'UPDATE_MESSAGE'
             },
-            'cardsV2': [{
-                'cardId': f'cleared_{abs(hash(company + role))}',
-                'card': {
-                    'header': {
-                        'title': f'{role} @ {company}',
-                        'subtitle': '✅ Applied & Cleared'
-                    },
-                    'sections': [{
-                        'widgets': [{
-                            'textParagraph': {
-                                'text': '<i>Application reviewed, outreach triggered & logged to Sheet1.</i>'
-                            }
-                        }]
-                    }]
-                }
-            }]
+            'text': f'✅ *{role} @ {company}* — Applied & Cleared! (Logged to Sheet1)'
         }
 
     space_name = (
