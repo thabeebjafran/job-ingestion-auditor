@@ -202,18 +202,13 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
             }
         })
 
-    # 5. Interactive Clear & Collapse Button
-    current_card_id = f'audit_{abs(hash(str(data.get("role_title") or "") + str(data.get("company_name") or "")))}'
+    # 5. Clear Gateway Button (Universal 1-Tap)
+    clear_url = f"https://job-auditor-service-709855928444.us-central1.run.app/clear?company={urllib.parse.quote(str(data.get('company_name') or 'Company'))}&role={urllib.parse.quote(str(data.get('role_title') or 'Role'))}"
     action_buttons.append({
         'text': '✅ Applied & Clear',
         'onClick': {
-            'action': {
-                'function': 'clear_card',
-                'parameters': [
-                    {'key': 'company', 'value': str(data.get('company_name') or 'Target Company')},
-                    {'key': 'role', 'value': str(data.get('role_title') or 'Open Position')},
-                    {'key': 'card_id', 'value': current_card_id}
-                ]
+            'openLink': {
+                'url': clear_url
             }
         }
     })
@@ -279,6 +274,79 @@ async def universal_compose(request: Request, to: str = '', su: str = '', body: 
         # Desktop / Laptop Web -> Redirect directly to Gmail Web Compose with prefilled draft
         gmail_web_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={to}&su={urllib.parse.quote(su)}&body={urllib.parse.quote(body)}"
         return RedirectResponse(url=gmail_web_url)
+
+@app.get("/clear")
+async def clear_gateway(request: Request, company: str = 'Company', role: str = 'Role'):
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Cleared</title>
+    <style>
+        body {{
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }}
+        .card {{
+            background: #1e293b;
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }}
+        .icon {{
+            font-size: 48px;
+            margin-bottom: 12px;
+        }}
+        h2 {{
+            margin: 0 0 8px 0;
+            color: #38bdf8;
+            font-size: 20px;
+        }}
+        p {{
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0 0 20px 0;
+        }}
+        .btn {{
+            display: inline-block;
+            padding: 10px 20px;
+            background: #0284c7;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }}
+    </style>
+    <script>
+        setTimeout(function() {{
+            window.close();
+        }}, 1800);
+    </script>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">✅</div>
+        <h2>Application Cleared!</h2>
+        <p><b>{html.escape(role)}</b> at <b>{html.escape(company)}</b> has been cleared and completed.</p>
+        <a href="javascript:window.close()" class="btn">Close Window</a>
+    </div>
+</body>
+</html>"""
+    return HTMLResponse(content=html_content)
 
 @app.get("/setup-sheet2")
 async def setup_sheet2():
