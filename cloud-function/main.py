@@ -638,7 +638,7 @@ def process_apify_jobs_background(items: list, target_space: str) -> dict:
                 append_to_sheet('Sheet2', reject_row)
                 sheet_info = 'Logged to Sheet2 (Rejected Leads)'
             else:
-                visa_status = 'Requires Sponsorship' if ('sponsor' in visa.lower() or 'yes' in visa.lower()) else 'Not Required'
+                visa_status = 'Requires Sponsorship'
                 apply_row = [company_res, role_res, career_url_res or 'N/A', '', visa_status, date_added, follow_up_date, tech_stack, notes]
                 sheet_ok = append_to_sheet('Sheet1', apply_row)
                 sheet_info = 'Logged to Sheet1 (Database)' if sheet_ok else 'Saved'
@@ -889,7 +889,7 @@ async def chat_webhook(request: Request):
                 append_to_sheet('Sheet2', reject_row)
                 sheet_info = 'Logged to Sheet2 (Rejected Leads)'
             else:
-                visa_status = 'Requires Sponsorship' if ('sponsor' in visa.lower() or 'yes' in visa.lower()) else 'Not Required'
+                visa_status = 'Requires Sponsorship'
                 apply_row = [company, role, career_url or 'N/A', '', visa_status, date_added, follow_up_date, tech_stack, notes]
                 sheet_ok = append_to_sheet('Sheet1', apply_row)
                 sheet_info = 'Logged to Sheet1 (Database)' if sheet_ok else 'Saved'
