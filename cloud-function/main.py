@@ -123,7 +123,7 @@ INSTRUCTIONS:
 
 import html
 
-def build_card_obj(data: dict, sheet_status: str) -> dict:
+def build_card_obj(data: dict, sheet_status: str, space_name: str = '') -> dict:
     company = html.escape(str(data.get('company_name') or 'Target Company'))
     role = html.escape(str(data.get('role_title') or 'Open Position'))
     is_scam = data.get('is_scam', False)
@@ -203,7 +203,7 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
         })
 
     # 5. Clear Gateway Button (Universal 1-Tap)
-    clear_url = f"https://job-auditor-service-709855928444.us-central1.run.app/clear?company={urllib.parse.quote(str(data.get('company_name') or 'Company'))}&role={urllib.parse.quote(str(data.get('role_title') or 'Role'))}"
+    clear_url = f"https://job-auditor-service-709855928444.us-central1.run.app/clear?company={urllib.parse.quote(str(data.get('company_name') or 'Company'))}&role={urllib.parse.quote(str(data.get('role_title') or 'Role'))}&space={urllib.parse.quote(space_name)}"
     action_buttons.append({
         'text': '✅ Applied & Clear',
         'onClick': {
@@ -276,7 +276,16 @@ async def universal_compose(request: Request, to: str = '', su: str = '', body: 
         return RedirectResponse(url=gmail_web_url)
 
 @app.get("/clear")
-async def clear_gateway(request: Request, company: str = 'Company', role: str = 'Role'):
+async def clear_gateway(request: Request, company: str = 'Company', role: str = 'Role', space: str = ''):
+    # Post visual confirmation to Google Chat Space
+    if space:
+        try:
+            post_chat_message(space, {
+                'text': f'~~{role} @ {company}~~ • ✅ *Applied & Cleared!*'
+            })
+            print(f"Posted clear confirmation for {role} @ {company} to space {space}")
+        except Exception as e:
+            print("Error posting clear message to space:", e)
     html_content = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -558,7 +567,7 @@ def process_apify_jobs_background(items: list, target_space: str) -> dict:
                 sheet_ok = append_to_sheet('Sheet1', apply_row)
                 sheet_info = 'Logged to Sheet1 (Database)' if sheet_ok else 'Saved'
 
-            card = build_card_obj(data, sheet_info)
+            card = build_card_obj(data, sheet_info, target_space)
             card_id = f'apify_{abs(hash(str(role_res) + str(company_res) + str(date_added)))}'
 
             post_res = post_chat_message(target_space, {
@@ -809,7 +818,7 @@ async def chat_webhook(request: Request):
                 sheet_ok = append_to_sheet('Sheet1', apply_row)
                 sheet_info = 'Logged to Sheet1 (Database)' if sheet_ok else 'Saved'
 
-            card = build_card_obj(data, sheet_info)
+            card = build_card_obj(data, sheet_info, space_name)
             card_id = f'audit_{abs(hash(str(role) + str(company) + str(date_added)))}'
 
             post_res = post_chat_message(space_name, {
