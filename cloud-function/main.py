@@ -554,7 +554,7 @@ def process_apify_jobs_background(items: list, target_space: str) -> dict:
     audited_count = 0
     skipped_count = 0
     
-    for i, item in enumerate(items[:15]):
+    for i, item in enumerate(items[:50]):
         if not item or not isinstance(item, dict):
             continue
             
@@ -705,7 +705,7 @@ async def apify_webhook(request: Request, space: str = 'spaces/-acITKAAAAE', tok
         if dataset_id:
             print(f"Fetching dataset items from Apify Dataset ID: {dataset_id}")
             try:
-                apify_url = f"https://api.apify.com/v2/datasets/{dataset_id}/items?limit=25&clean=true"
+                apify_url = f"https://api.apify.com/v2/datasets/{dataset_id}/items?limit=50&clean=true"
                 if apify_token:
                     apify_url += f"&token={apify_token}"
                 res = requests.get(apify_url, timeout=20)
