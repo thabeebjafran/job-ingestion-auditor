@@ -364,6 +364,75 @@ async def clear_gateway(request: Request, company: str = 'Company', role: str = 
 </html>"""
     return HTMLResponse(content=html_content)
 
+@app.get("/setup-dropdowns")
+async def setup_dropdowns():
+    try:
+        token = get_google_access_token()
+        meta_url = f'https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}'
+        meta_res = requests.get(meta_url, headers={'Authorization': f'Bearer {token}'})
+        meta = meta_res.json()
+        sheet1_id = 0
+        for s in meta.get('sheets', []):
+            if s.get('properties', {}).get('title') == 'Sheet1':
+                sheet1_id = s['properties']['sheetId']
+                break
+
+        reqs = [
+            {
+                'setDataValidation': {
+                    'range': {
+                        'sheetId': sheet1_id,
+                        'startRowIndex': 1,
+                        'endRowIndex': 10000,
+                        'startColumnIndex': 3,
+                        'endColumnIndex': 4
+                    },
+                    'rule': {
+                        'condition': {
+                            'type': 'ONE_OF_LIST',
+                            'values': [
+                                {'userEnteredValue': 'Applied'},
+                                {'userEnteredValue': 'Couldn\'t'},
+                                {'userEnteredValue': 'Interviewing'},
+                                {'userEnteredValue': 'Offered'},
+                                {'userEnteredValue': 'Rejected'},
+                                {'userEnteredValue': 'Accepted'}
+                            ]
+                        },
+                        'showCustomUi': True,
+                        'strict': False
+                    }
+                }
+            },
+            {
+                'setDataValidation': {
+                    'range': {
+                        'sheetId': sheet1_id,
+                        'startRowIndex': 1,
+                        'endRowIndex': 10000,
+                        'startColumnIndex': 4,
+                        'endColumnIndex': 5
+                    },
+                    'rule': {
+                        'condition': {
+                            'type': 'ONE_OF_LIST',
+                            'values': [
+                                {'userEnteredValue': 'Requires Sponsorship'},
+                                {'userEnteredValue': 'Not Required'},
+                                {'userEnteredValue': 'Self-Sponsored / Freelance'}
+                            ]
+                        },
+                        'showCustomUi': True,
+                        'strict': False
+                    }
+                }
+            }
+        ]
+        res = requests.post(f'https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}:batchUpdate', headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}, json={'requests': reqs})
+        return {"status": res.status_code, "response": res.json()}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
 @app.get("/setup-sheet2")
 async def setup_sheet2():
     token = get_google_access_token()
