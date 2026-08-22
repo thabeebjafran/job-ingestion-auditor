@@ -149,7 +149,6 @@ def build_card_obj(data: dict, sheet_status: str, space_name: str = '') -> dict:
     
     # 1. Compose Button (Universal link: Native Gmail App on Mobile, Gmail Web Compose on Laptop)
     if email:
-        import urllib.parse
         params = urllib.parse.urlencode({
             'to': email,
             'su': raw_subject,
@@ -191,7 +190,6 @@ def build_card_obj(data: dict, sheet_status: str, space_name: str = '') -> dict:
 
     # 4. Fallback search button if no direct contact or apply link was detected
     if not action_buttons:
-        import urllib.parse
         search_query = urllib.parse.quote(f"{data.get('company_name', '')} {data.get('role_title', '')} Dubai careers apply")
         action_buttons.append({
             'text': '🌐 View / Apply on Web',
@@ -243,7 +241,6 @@ async def health_check():
 
 @app.get("/compose")
 async def universal_compose(request: Request, to: str = '', su: str = '', body: str = ''):
-    import urllib.parse
     user_agent = request.headers.get('user-agent', '').lower()
     is_mobile = any(m in user_agent for m in ['mobile', 'android', 'iphone', 'ipad', 'ipod'])
     
