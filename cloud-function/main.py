@@ -275,10 +275,15 @@ async def universal_compose(request: Request, to: str = '', su: str = '', body: 
         gmail_web_url = f"https://mail.google.com/mail/?view=cm&fs=1&to={to}&su={urllib.parse.quote(su)}&body={urllib.parse.quote(body)}"
         return RedirectResponse(url=gmail_web_url)
 
+CLEARED_LEAD_KEYS = set()
+
 @app.get("/clear")
 async def clear_gateway(request: Request, company: str = 'Company', role: str = 'Role', space: str = ''):
-    # Post visual confirmation to Google Chat Space
-    if space:
+    lead_key = f"{space.strip()}:{company.strip().lower()}:{role.strip().lower()}"
+    
+    # Only post once per lead (deduplicate multiple clicks)
+    if space and lead_key not in CLEARED_LEAD_KEYS:
+        CLEARED_LEAD_KEYS.add(lead_key)
         try:
             post_chat_message(space, {
                 'text': f'~~{role} @ {company}~~ • ✅ *Applied & Cleared!*'
@@ -286,6 +291,8 @@ async def clear_gateway(request: Request, company: str = 'Company', role: str = 
             print(f"Posted clear confirmation for {role} @ {company} to space {space}")
         except Exception as e:
             print("Error posting clear message to space:", e)
+    else:
+        print(f"Duplicate clear click ignored for {lead_key}")
     html_content = f"""<!DOCTYPE html>
 <html>
 <head>
