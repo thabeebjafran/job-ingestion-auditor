@@ -202,6 +202,20 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
             }
         })
 
+    # 5. Interactive Clear & Collapse Button
+    action_buttons.append({
+        'text': '✅ Applied & Clear',
+        'onClick': {
+            'action': {
+                'function': 'clear_card',
+                'parameters': [
+                    {'key': 'company', 'value': str(data.get('company_name') or 'Target Company')},
+                    {'key': 'role', 'value': str(data.get('role_title') or 'Open Position')}
+                ]
+            }
+        }
+    })
+
     widgets = [
         {
             'textParagraph': {
@@ -557,6 +571,38 @@ async def chat_webhook(request: Request):
         event = {}
 
     print("Incoming Chat Webhook event:", json.dumps(event))
+
+    # Handle Interactive Card Click Action (e.g. Clear Card)
+    action_obj = event.get('action') or event.get('common', {})
+    invoked_fn = (action_obj.get('actionMethodName') or 
+                  action_obj.get('invokedFunction') or 
+                  (event.get('action') and event['action'].get('actionMethodName')))
+    
+    if invoked_fn == 'clear_card':
+        params_list = action_obj.get('parameters') or []
+        params = {}
+        if isinstance(params_list, list):
+            params = {p.get('key'): p.get('value') for p in params_list if isinstance(p, dict)}
+        elif isinstance(params_list, dict):
+            params = params_list
+            
+        company = params.get('company', 'Target Company')
+        role = params.get('role', 'Position')
+        
+        return {
+            'actionResponse': {
+                'type': 'UPDATE_MESSAGE'
+            },
+            'cardsV2': [{
+                'cardId': f'cleared_{abs(hash(company + role))}',
+                'card': {
+                    'header': {
+                        'title': f'<s>{role} @ {company}</s>',
+                        'subtitle': '✅ Applied & Cleared'
+                    }
+                }
+            }]
+        }
 
     space_name = (
         event.get('space', {}).get('name') or
