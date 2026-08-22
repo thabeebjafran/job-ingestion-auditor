@@ -377,6 +377,21 @@ async def setup_dropdowns():
                 sheet1_id = s['properties']['sheetId']
                 break
 
+        # Auto-fix any typo 'Coudn't' in existing rows
+        try:
+            d_val_url = f'https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}/values/Sheet1!D2:D'
+            d_vals_res = requests.get(d_val_url, headers={'Authorization': f'Bearer {token}'}).json()
+            rows = d_vals_res.get('values', [])
+            fixed = False
+            for r in rows:
+                if r and r[0] == "Coudn't":
+                    r[0] = "Couldn't"
+                    fixed = True
+            if fixed:
+                requests.put(f'https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}/values/Sheet1!D2:D?valueInputOption=USER_ENTERED', headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}, json={'values': rows})
+        except Exception as fix_err:
+            print("Error fixing typos:", fix_err)
+
         reqs = [
             {
                 'setDataValidation': {
@@ -393,6 +408,7 @@ async def setup_dropdowns():
                             'values': [
                                 {'userEnteredValue': 'Applied'},
                                 {'userEnteredValue': 'Couldn\'t'},
+                                {'userEnteredValue': 'Try Again'},
                                 {'userEnteredValue': 'Interviewing'},
                                 {'userEnteredValue': 'Offered'},
                                 {'userEnteredValue': 'Rejected'},
