@@ -203,6 +203,7 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
         })
 
     # 5. Interactive Clear & Collapse Button
+    current_card_id = f'audit_{abs(hash(str(data.get("role_title") or "") + str(data.get("company_name") or "")))}'
     action_buttons.append({
         'text': '✅ Applied & Clear',
         'onClick': {
@@ -210,7 +211,8 @@ def build_card_obj(data: dict, sheet_status: str) -> dict:
                 'function': 'clear_card',
                 'parameters': [
                     {'key': 'company', 'value': str(data.get('company_name') or 'Target Company')},
-                    {'key': 'role', 'value': str(data.get('role_title') or 'Open Position')}
+                    {'key': 'role', 'value': str(data.get('role_title') or 'Open Position')},
+                    {'key': 'card_id', 'value': current_card_id}
                 ]
             }
         }
@@ -592,14 +594,15 @@ async def chat_webhook(request: Request):
             
         company = str(params.get('company') or 'Target Company')
         role = str(params.get('role') or 'Position')
+        target_card_id = str(params.get('card_id') or event.get('cardId') or f'audit_{abs(hash(role + company))}')
         
-        print(f"Clearing card for {role} @ {company}")
+        print(f"Clearing card {target_card_id} for {role} @ {company}")
         return {
             'actionResponse': {
                 'type': 'UPDATE_MESSAGE'
             },
             'cardsV2': [{
-                'cardId': f'cleared_{abs(hash(company + role))}',
+                'cardId': target_card_id,
                 'card': {
                     'header': {
                         'title': f'{role} @ {company}',
@@ -608,7 +611,7 @@ async def chat_webhook(request: Request):
                     'sections': [{
                         'widgets': [{
                             'textParagraph': {
-                                'text': '<b>Status:</b> Application Cleared & Logged to Sheet1'
+                                'text': '<i>Application reviewed & cleared.</i>'
                             }
                         }]
                     }]
