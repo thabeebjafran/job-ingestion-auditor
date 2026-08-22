@@ -573,18 +573,22 @@ async def chat_webhook(request: Request):
     print("Incoming Chat Webhook event:", json.dumps(event))
 
     # Handle Interactive Card Click Action (e.g. Clear Card)
-    action_obj = event.get('action') or event.get('common', {})
-    invoked_fn = (action_obj.get('actionMethodName') or 
-                  action_obj.get('invokedFunction') or 
-                  (event.get('action') and event['action'].get('actionMethodName')))
-    
-    if invoked_fn == 'clear_card':
-        params_list = action_obj.get('parameters') or []
+    if event.get('type') == 'CARD_CLICKED' or event.get('action') or event.get('common', {}).get('invokedFunction'):
+        action_data = event.get('action') or {}
+        common_data = event.get('common') or {}
+        
         params = {}
-        if isinstance(params_list, list):
-            params = {p.get('key'): p.get('value') for p in params_list if isinstance(p, dict)}
-        elif isinstance(params_list, dict):
-            params = params_list
+        # 1. From action.parameters list
+        if isinstance(action_data.get('parameters'), list):
+            for p in action_data['parameters']:
+                if isinstance(p, dict) and 'key' in p:
+                    params[p['key']] = p.get('value', '')
+        # 2. From action.parameters dict
+        elif isinstance(action_data.get('parameters'), dict):
+            params.update(action_data['parameters'])
+        # 3. From common.parameters dict
+        if isinstance(common_data.get('parameters'), dict):
+            params.update(common_data['parameters'])
             
         company = str(params.get('company') or 'Target Company')
         role = str(params.get('role') or 'Position')
