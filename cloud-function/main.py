@@ -607,10 +607,8 @@ async def chat_webhook(request: Request):
                     },
                     'sections': [{
                         'widgets': [{
-                            'decoratedText': {
-                                'topLabel': 'Status',
-                                'text': '<b>Application Cleared & Logged to Sheet1</b>',
-                                'bottomLabel': 'Ready for next application'
+                            'textParagraph': {
+                                'text': '<b>Status:</b> Application Cleared & Logged to Sheet1'
                             }
                         }]
                     }]
