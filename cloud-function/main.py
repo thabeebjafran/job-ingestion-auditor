@@ -594,7 +594,24 @@ async def chat_webhook(request: Request):
             'actionResponse': {
                 'type': 'UPDATE_MESSAGE'
             },
-            'text': f'✅ *{role} @ {company}* — Applied & Cleared! (Logged to Sheet1)'
+            'cardsV2': [{
+                'cardId': f'cleared_{abs(hash(company + role))}',
+                'card': {
+                    'header': {
+                        'title': f'{role} @ {company}',
+                        'subtitle': '✅ Marked as Applied & Cleared'
+                    },
+                    'sections': [{
+                        'widgets': [{
+                            'decoratedText': {
+                                'topLabel': 'Status',
+                                'text': '<b>Application Cleared & Logged to Sheet1</b>',
+                                'bottomLabel': 'Ready for next application'
+                            }
+                        }]
+                    }]
+                }
+            }]
         }
 
     space_name = (
