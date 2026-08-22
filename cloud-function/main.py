@@ -586,8 +586,8 @@ async def chat_webhook(request: Request):
         elif isinstance(params_list, dict):
             params = params_list
             
-        company = params.get('company', 'Target Company')
-        role = params.get('role', 'Position')
+        company = str(params.get('company') or 'Target Company')
+        role = str(params.get('role') or 'Position')
         
         return {
             'actionResponse': {
@@ -597,9 +597,16 @@ async def chat_webhook(request: Request):
                 'cardId': f'cleared_{abs(hash(company + role))}',
                 'card': {
                     'header': {
-                        'title': f'<s>{role} @ {company}</s>',
+                        'title': f'{role} @ {company}',
                         'subtitle': '✅ Applied & Cleared'
-                    }
+                    },
+                    'sections': [{
+                        'widgets': [{
+                            'textParagraph': {
+                                'text': '<i>Application reviewed, outreach triggered & logged to Sheet1.</i>'
+                            }
+                        }]
+                    }]
                 }
             }]
         }
